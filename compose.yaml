@@ -1,0 +1,42 @@
+name: "ApiVigil"
+services:
+  db:
+    container_name: "db"
+    image: "postgres:18-alpine"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "apivigil"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "data:/var/lib/postgresql"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  backend:
+    container_name: "backend"
+    build:
+      context: "./app"
+      dockerfile: "Containerfile.dev"
+      args:
+        - PYTHON_VERSION=python3.14-trixie
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/apivigil
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./app:/app:Z"
+      - vscode:/root/.vscode-server:Z
+    command: "uv run python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  data: {}
+  vscode: {}

@@ -27,6 +27,7 @@ urlpatterns = [
     path(
         "monitor/<int:pk>/check/", views.MonitorAPIView.as_view(), name="monitor_check"
     ),
+    path("monitor/<int:pk>/row/", views.MonitorRowView.as_view(), name="monitor_row"),
     path(
         "monitor/<int:pk>/delete/",
         views.MonitorDeleteView.as_view(),

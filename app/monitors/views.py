@@ -4,13 +4,14 @@ from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.detail import SingleObjectMixin, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_htmx.http import trigger_client_event
 from .models import Monitor
 from .forms import AddAPIForm
 from .utils import get_monitor_stats
 from .services import MonitorService
+from .tasks import check_api_task
 
 # Create your views here.
 
@@ -140,13 +141,26 @@ class MonitorAPIView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin,
     def post(self, request, *args, **kwargs):
         monitor = self.get_object()
 
-        service = MonitorService(monitor)
-
-        updated_monitor = service.run_check()
+        check_api_task.delay(monitor.id)
 
         context = get_monitor_stats(request.user)
-        context["monitor"] = updated_monitor
+        context["monitor"] = monitor
+        context["is_checking"] = True
 
         return render(
             request, "monitors/partials/update_monitor_response.html", context
         )
+
+
+class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Monitor
+    template_name = "monitors/partials/update_monitor_response.html"
+    context_object_name = "monitor"
+
+    def test_func(self):
+        return self.get_object().user == self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_monitor_stats(self.request.user))
+        return context

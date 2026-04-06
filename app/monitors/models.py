@@ -31,6 +31,9 @@ class MonitorLog(models.Model):
 
     class Meta:
         ordering = ["-timestamp"]
+        indexes = [
+            models.Index(fields=["timestamp"]),
+        ]
 
     def __str__(self):
         return f"{self.monitor.name} - {self.status_code} at {self.timestamp}"

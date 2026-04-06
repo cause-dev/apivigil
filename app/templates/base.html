@@ -49,13 +49,13 @@
           </div>
           <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 text-lg">
             <li>
-              <a href="/">Dashboard</a>
+              <a href="{% url 'dashboard' %}" hx-boost="true">Dashboard</a>
             </li>
             <li>
               <a>Endpoints</a>
             </li>
             <li>
-              <a>Logs</a>
+              <a href="{% url 'monitor_logs' %}" hx-boost="true">Logs</a>
             </li>
           </ul>
         </div>
@@ -66,13 +66,13 @@
       <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1 gap-2">
           <li>
-            <a href="/" class="hover:text-primary transition-colors">Dashboard</a>
+            <a href="{% url 'dashboard' %}" class="hover:text-primary transition-colors" hx-boost="true">Dashboard</a>
           </li>
           <li>
             <a class="hover:text-primary transition-colors">Endpoints</a>
           </li>
           <li>
-            <a class="hover:text-primary transition-colors">Logs</a>
+            <a class="hover:text-primary transition-colors" href="{% url 'monitor_logs' %}" hx-boost="true">Logs</a>
           </li>
         </ul>
       </div>

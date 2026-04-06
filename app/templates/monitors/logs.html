@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Logs - ApiVigil
+{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item">
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+  </li>
+  <li class="breadcrumb-item active">Logs</li>
+{% endblock %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold">Event Logs</h1>
+
+      <!-- Monitor Filter Dropdown -->
+      <select name="monitor_id" 
+        class="select select-bordered w-full max-w-xs"
+        hx-get="{% url 'monitor_logs' %}"
+        hx-target="#log-table-body"
+        hx-push-url="true">  <!-- This updates the browser URL bar -->
+    <option value="">All Monitors</option>
+    {% for m in user_monitors %}
+        <option value="{{ m.id }}" {% if m.id|stringformat:"s" == request.GET.monitor_id %}selected{% endif %}>
+            {{ m.name }}
+        </option>
+    {% endfor %}
+</select>
+    </div>
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+  <div class="overflow-x-auto p-4">
+    <table class="table w-full">
+      <thead>
+        <tr class="text-base-content/50">
+          <th class="w-1/4">Monitor</th>      <!-- 25% width -->
+          <th class="w-1/6">Status</th>       <!-- Fixed width -->
+          <th class="w-1/6">Latency</th>      <!-- Fixed width -->
+          <th class="w-1/4">Timestamp</th>    <!-- 25% width -->
+          <th>Error</th>                     <!-- Takes remaining space -->
+        </tr>
+      </thead>
+      <!-- Ensure the ID is exactly on the TBODY -->
+      <tbody id="log-table-body">
+        {% include 'monitors/partials/log_table_body.html' %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+    <!-- Simple Pagination -->
+    {% if is_paginated %}
+      <div class="flex justify-center mt-6">
+        <div class="join">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-sm">«</a>
+          {% endif %}
+          <button class="join-item btn btn-sm">Page {{ page_obj.number }}</button>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-sm">»</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

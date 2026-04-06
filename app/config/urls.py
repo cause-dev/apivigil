@@ -33,5 +33,6 @@ urlpatterns = [
         views.MonitorDeleteView.as_view(),
         name="monitor_delete",
     ),
+    path("logs/", views.LogsView.as_view(), name="monitor_logs"),
     path("user/", include("user.urls")),
 ]

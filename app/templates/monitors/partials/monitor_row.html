@@ -70,7 +70,9 @@
           </svg>
         </div>
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40 border border-base-300">
-          <li><a>View Logs</a></li>
+          <li>
+            <a href="{% url 'monitor_logs' %}?monitor_id={{ monitor.id }}" hx-boos="true">View Logs</a>
+          </li>
           <li>
             <button type="button" 
                     hx-get="{% url 'edit_api' monitor.id %}" 

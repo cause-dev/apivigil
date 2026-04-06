@@ -7,10 +7,9 @@ from django.views.generic.edit import DeleteView
 from django.views.generic.detail import SingleObjectMixin, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django_htmx.http import trigger_client_event
-from .models import Monitor
+from .models import Monitor, MonitorLog
 from .forms import AddAPIForm
 from .utils import get_monitor_stats
-from .services import MonitorService
 from .tasks import check_api_task
 
 # Create your views here.
@@ -163,4 +162,42 @@ class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(get_monitor_stats(self.request.user))
+        return context
+
+
+class LogsView(LoginRequiredMixin, ListView):
+    model = MonitorLog
+    template_name = "monitors/logs.html"
+    context_object_name = "logs"
+    paginate_by = 25
+
+    def get_queryset(self):
+        qs = (
+            MonitorLog.objects.filter(monitor__user=self.request.user)
+            .select_related("monitor")
+            .order_by("-timestamp")
+        )
+
+        monitor_id = self.request.GET.get("monitor_id")
+        if monitor_id:
+            qs = qs.filter(monitor_id=monitor_id)
+
+        return qs
+
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+
+        if request.htmx:
+            # RETURN ONLY THE ROWS
+            return render(
+                request,
+                "monitors/partials/log_table_body.html",
+                {"logs": self.object_list},
+            )
+
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["user_monitors"] = Monitor.objects.filter(user=self.request.user)
         return context

@@ -1,0 +1,12 @@
+<!-- 1. Header & Quick Action -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div>
+    <h1 class="text-3xl font-extrabold tracking-tight">System Overview</h1>
+    <p class="text-base-content/60 text-sm">Real-time status of your monitored endpoints.</p>
+  </div>
+  <button class="btn btn-primary shadow-lg" hx-get="{% url 'add_api' %}" hx-target="#add_monitor_modal_content" onclick="add_monitor_modal.showModal()">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>New Monitor
+  </button>
+</div>

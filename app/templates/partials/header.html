@@ -1,0 +1,47 @@
+<header class="navbar bg-base-100 shadow-md px-4 md:px-8">
+  {% include 'partials/dropdown.html' %}
+
+  <div class="navbar-center hidden lg:flex">
+    <ul class="menu menu-horizontal px-1 gap-2">
+      <li>
+        <a href="{% url 'dashboard' %}" class="hover:text-primary transition-colors" hx-get="/" hx-target="#main-content" hx-push-url="true">Dashboard</a>
+      </li>
+      <li>
+        <a class="hover:text-primary transition-colors" hx-get="/endpoints/" hx-target="#main-content" hx-push-url="true">Endpoints</a>
+      </li>
+      <li>
+        <a class="hover:text-primary transition-colors" href="{% url 'monitor_logs' %}" hx-get="{% url 'monitor_logs' %}" hx-target="#main-content" hx-push-url="true">Logs</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="navbar-end gap-2">
+    {% if user.is_authenticated %}
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online">
+          <div class="w-10 rounded-full border border-primary">
+            <img alt="User Avatar" src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" />
+          </div>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+          <li>
+            <span class="font-bold text-primary">{{ user.username }}</span>
+          </li>
+          <li>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm text-error w-full justify-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>Logout
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn btn-ghost" hx-get="{% url 'login' %}" hx-target="#main-content" hx-push-url="true">Login</a>
+      <a href="{% url 'register' %}" class="btn btn-primary" hx-get="{% url 'register' %}" hx-target="#main-content" hx-push-url="true">Sign Up</a>
+    {% endif %}
+  </div>
+</header>

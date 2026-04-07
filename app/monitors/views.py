@@ -1,6 +1,7 @@
 from django.urls import reverse_lazy
 from django.shortcuts import render
 from django.views import View
+from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
@@ -27,6 +28,21 @@ class DashboardView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Merges our stats helper into the template context
+        context.update(get_monitor_stats(self.request.user))
+        context["base_template"] = (
+            "partials/content_base.html" if self.request.htmx else "base.html"
+        )
+        return context
+
+
+class DashboardPollView(LoginRequiredMixin, TemplateView):
+    template_name = "monitors/partials/dashboard_poll.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["monitors"] = Monitor.objects.filter(user=self.request.user).order_by(
+            "-created_at"
+        )
         context.update(get_monitor_stats(self.request.user))
         return context
 
@@ -184,20 +200,20 @@ class LogsView(LoginRequiredMixin, ListView):
 
         return qs
 
-    def get(self, request, *args, **kwargs):
-        self.object_list = self.get_queryset()
-
-        if request.htmx:
-            # RETURN ONLY THE ROWS
-            return render(
-                request,
-                "monitors/partials/log_table_body.html",
-                {"logs": self.object_list},
-            )
-
-        return super().get(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["user_monitors"] = Monitor.objects.filter(user=self.request.user)
+        context["base_template"] = (
+            "partials/content_base.html" if self.request.htmx else "base.html"
+        )
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.htmx:
+            if self.request.GET.get("monitor_id"):
+                # If a specific monitor is selected, we only update the table body
+                return render(
+                    self.request, "monitors/partials/log_table_body.html", context
+                )
+
+        return super().render_to_response(context, **response_kwargs)

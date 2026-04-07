@@ -1,31 +1,64 @@
-from django.shortcuts import render, redirect
-from .forms import SignUpForm
+from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth.views import (
+    LoginView as DjangoLoginView,
+    LogoutView as DjangoLogoutView,
+)
+from django.views.generic import CreateView
+from .forms import SignUpForm, LoginForm
 
 # Create your views here.
 
 
-def register(request):
-    if request.method == "POST":
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get("username")
-            messages.success(
-                request, f"Account created for {username}! You can now log in."
-            )
-            return redirect("login")
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = SignUpForm()
+class RegisterView(CreateView):
+    form_class = SignUpForm
+    template_name = "user/register.html"
+    success_url = reverse_lazy("login")
 
-    context = {"form": form}
-    return render(request, "user/register.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["base_template"] = (
+            "partials/content_base.html" if self.request.htmx else "base.html"
+        )
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        username = form.cleaned_data.get("username")
+        messages.success(
+            self.request, f"Account created for {username}! You can now log in."
+        )
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Please correct the errors below.")
+        return super().form_invalid(form)
 
 
-def logout_view(request):
-    logout(request)
-    messages.info(request, "You have been logged out.")
-    return redirect("login")
+class LoginView(DjangoLoginView):
+    template_name = "user/login.html"
+    authentication_form = LoginForm
+    success_url = reverse_lazy("dashboard")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["base_template"] = (
+            "partials/content_base.html" if self.request.htmx else "base.html"
+        )
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, "You have successfully logged in.")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Invalid username or password. Please try again.")
+        return super().form_invalid(form)
+
+
+class LogoutView(DjangoLogoutView):
+    next_page = reverse_lazy("login")
+
+    def dispatch(self, request, *args, **kwargs):
+        messages.success(request, "You have been logged out.")
+        return super().dispatch(request, *args, **kwargs)

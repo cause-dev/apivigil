@@ -2,6 +2,8 @@ from django.urls import reverse_lazy
 from django.shortcuts import render
 from django.views import View
 from django.db.models import Avg
+from django.utils import timezone
+from datetime import timedelta
 from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView
@@ -63,23 +65,37 @@ class APIDetailsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        monitor = self.object
 
-        monitor = self.get_object()
-        context["recent_logs"] = monitor.logs.all()[:10]  # Show last 10 logs
+        # 1. Get logs from the last 24 hours for the chart
+        last_24h = timezone.now() - timedelta(hours=24)
+        chart_logs = monitor.logs.filter(timestamp__gte=last_24h).order_by("timestamp")
 
-        avg_latency = monitor.logs.aggregate(Avg("latency"))["latency__avg"]
-        context["avg_latency"] = avg_latency if avg_latency is not None else 0
+        # 2. Format data for Chart.js
+        # We use .strftime to make the timestamps readable in JS
+        context["chart_labels"] = [
+            log.timestamp.strftime("%H:%M") for log in chart_logs
+        ]
+        context["chart_data"] = [
+            log.latency if log.latency else 0 for log in chart_logs
+        ]
 
+        # 3. Calculate Uptime %
         total_logs = monitor.logs.count()
         if total_logs > 0:
             online_logs = monitor.logs.filter(is_online=True).count()
             context["uptime_percentage"] = round((online_logs / total_logs) * 100, 1)
         else:
-            context["uptime_percentage"] = 0.0
+            context["uptime_percentage"] = 0
+
+        # 4. Average Latency
+        avg = monitor.logs.aggregate(Avg("latency"))["latency__avg"]
+        context["avg_latency"] = round(avg, 3) if avg else 0
 
         context["base_template"] = (
             "partials/content_base.html" if self.request.htmx else "base.html"
         )
+
         return context
 
 

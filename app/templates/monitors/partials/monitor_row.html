@@ -3,15 +3,17 @@
     {% if is_checking %}
       hx-get="{% url 'monitor_row' monitor.id %}"
       hx-trigger="load delay:3s"
-      hx-swap="outerHTML"
     {% endif %}>
     
   <td>
-    <div class="flex flex-col">
-      <span class="font-bold text-base">{{ monitor.name }}</span>
-      <span class="text-xs opacity-50 font-mono">{{ monitor.url|truncatechars:40 }}</span>
-    </div>
-  </td>
+  <div class="flex flex-col">
+    <!-- Link the name to the detail view -->
+    <a href="{% url 'api_detail' monitor.id %}" hx-get="{% url 'api_detail' monitor.id %}" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">
+        {{ monitor.name }}
+    </a>
+    <span class="text-xs opacity-50 font-mono">{{ monitor.url|truncatechars:40 }}</span>
+  </div>
+</td>
 
   <td>
     <div class="badge badge-outline badge-sm">{{ monitor.expected_status_code }}</div>
@@ -35,6 +37,8 @@
       </div>
     {% endif %}
   </td>
+
+  
 
   <td class="text-sm">
     {% if is_checking %}

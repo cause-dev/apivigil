@@ -1,0 +1,133 @@
+{% extends base_template %}
+
+{% block title %}
+  {{ monitor.name }} - ApiVigil
+{% endblock %}
+
+{% block content %}
+  {% include 'partials/breadcrumb.html' with page_breadcrumb=monitor.name %}
+
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-end">
+      <div>
+        <h1 class="text-3xl font-extrabold">{{ monitor.name }}</h1>
+        <p class="font-mono text-sm opacity-50">{{ monitor.url }}</p>
+      </div>
+      <div class="flex gap-2">
+        <!-- We use hx-target="body" for the check to refresh everything, or target #main-content -->
+        <button hx-post="{% url 'monitor_check' monitor.id %}" hx-target="#main-content" class="btn btn-primary btn-sm">Check Now</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-sm" hx-get="{% url 'dashboard' %}" hx-target="#main-content" hx-push-url="true">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <!-- 1. Stats Row -->
+    <div class="stats shadow bg-base-100 border border-base-300 w-full">
+      <div class="stat">
+        <div class="stat-title">Current Status</div>
+        <!-- CLEANED: No massive whitespace blocks here -->
+        <div class="stat-value {% if monitor.is_online %}
+            text-success
+          {% else %}
+            text-error
+          {% endif %}">{{ monitor.is_online|yesno:'Online,Down' }}</div>
+        <div class="stat-desc">Last checked {{ monitor.last_checked|timesince }} ago</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Uptime (All time)</div>
+        <div class="stat-value text-primary">{{ uptime_percentage }}%</div>
+        <div class="stat-desc">Based on {{ monitor.logs.count }} checks</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-title">Avg. Latency</div>
+        <div class="stat-value text-secondary">{{ avg_latency }}s</div>
+        <div class="stat-desc">Response time</div>
+      </div>
+    </div>
+
+    <!-- 2. Chart Section -->
+    <div class="card bg-base-100 border border-base-300 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title text-base-content/50 text-sm uppercase tracking-widest">Latency (Last 24 Hours)</h2>
+        <div class="h-64 w-full">
+          <canvas id="latencyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Recent Logs Table -->
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="p-6 pb-0">
+        <h2 class="text-xl font-bold">Recent Events</h2>
+      </div>
+      <div class="overflow-x-auto p-4">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Latency</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in monitor.logs.all|slice:':10' %}
+              <tr>
+                <td>
+                  {% if log.is_online %}
+                    <span class="badge badge-success badge-xs"></span> Healthy
+                  {% else %}
+                    <span class="badge badge-error badge-xs"></span> Down
+                  {% endif %}
+                </td>
+                <td class="font-mono text-xs">{{ log.latency|floatformat:3 }}s</td>
+                <td class="opacity-50 text-xs">{{ log.timestamp|date:'H:i:s (M d)' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Setup -->
+  {{ chart_labels|json_script:'labels-data' }}
+  {{ chart_data|json_script:'latency-data' }}
+  <script>
+    ;(function () {
+      function renderLatencyChart() {
+        const canvas = document.getElementById('latencyChart')
+        if (!canvas) return
+        const labels = JSON.parse(document.getElementById('labels-data').textContent)
+        const data = JSON.parse(document.getElementById('latency-data').textContent)
+        const ctx = canvas.getContext('2d')
+    
+        // Setup chart
+        const existingChart = Chart.getChart('latencyChart')
+        if (existingChart) existingChart.destroy()
+    
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Latency (s)',
+                data: data,
+                borderColor: '#3abff8',
+                backgroundColor: 'rgba(58, 191, 248, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2
+              }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        })
+      }
+      renderLatencyChart()
+      document.body.addEventListener('htmx:afterSettle', renderLatencyChart)
+    })()
+  </script>
+{% endblock %}

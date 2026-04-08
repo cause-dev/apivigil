@@ -6,7 +6,7 @@
 
 {% block content %}
   {% include 'partials/breadcrumb.html' %}
-  <div class="space-y-8" id="poll-container" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 10s" hx-target="#poll-container" hx-swap="outerHTML">
+  <div class="space-y-8" id="poll-container" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 10s" hx-target="#poll-container">
     {% include 'monitors/partials/dashboard_header.html' %}
 
     {% include 'monitors/partials/stats.html' %}

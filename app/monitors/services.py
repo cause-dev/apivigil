@@ -1,13 +1,13 @@
 import requests
 from django.utils import timezone
-from .models import MonitorLog
+from .models import EndpointLog
 
 
 class MonitorService:
-    def __init__(self, monitor):
-        self.monitor = monitor
-        self.expected_code = monitor.expected_status_code
-        self.url = monitor.url
+    def __init__(self, endpoint):
+        self.endpoint = endpoint
+        self.expected_code = endpoint.expected_status_code
+        self.url = endpoint.url
         self.timeout = 10
         self.headers = {
             "User-Agent": "ApiVigil/1.0 (https://apivigil.com)",
@@ -37,7 +37,7 @@ class MonitorService:
 
         self._create_log_entry()
 
-        return self._update_monitor_model()
+        return self._update_endpoint_model()
 
     def _perform_request(self, method):
         """Internal helper to execute the HTTP call."""
@@ -52,17 +52,17 @@ class MonitorService:
             self.url, headers=self.headers, timeout=self.timeout, stream=True
         )
 
-    def _update_monitor_model(self):
+    def _update_endpoint_model(self):
         """Updates the Django model instance with the check results."""
-        self.monitor.is_online = self.is_online
-        self.monitor.last_checked = timezone.now()
-        self.monitor.save()
-        return self.monitor
+        self.endpoint.is_online = self.is_online
+        self.endpoint.last_checked = timezone.now()
+        self.endpoint.save()
+        return self.endpoint
 
     def _create_log_entry(self):
-        """Saves a snapshot of this check to the MonitorLog table."""
-        MonitorLog.objects.create(
-            monitor=self.monitor,
+        """Saves a snapshot of this check to the EndpointLog table."""
+        EndpointLog.objects.create(
+            endpoint=self.endpoint,
             status_code=self.status_code,
             latency=self.response_time,
             is_online=self.is_online,

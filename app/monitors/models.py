@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 
-class Monitor(models.Model):
+class Endpoint(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="monitors")
     name = models.CharField(max_length=100)
     url = models.URLField()
@@ -19,9 +19,9 @@ class Monitor(models.Model):
         return f"{self.name} ({self.url})"
 
 
-class MonitorLog(models.Model):
+class EndpointLog(models.Model):
     monitor = models.ForeignKey(
-        to=Monitor, on_delete=models.CASCADE, related_name="logs"
+        to=Endpoint, on_delete=models.CASCADE, related_name="logs"
     )
     status_code = models.PositiveBigIntegerField(null=True, blank=True)
     latency = models.FloatField(null=True, blank=True)

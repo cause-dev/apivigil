@@ -11,32 +11,32 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from django_htmx.http import trigger_client_event
 
-from monitors.utils import get_monitor_stats
+from monitors.utils import get_endpoint_stats
 from monitors.tasks import check_api_task
-from monitors.models import Monitor
+from monitors.models import Endpoint
 from monitors.forms import AddAPIForm
 
 
 class APIDetailsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    model = Monitor
+    model = Endpoint
     template_name = "monitors/api_details.html"
-    context_object_name = "monitor"
+    context_object_name = "endpoint"
 
     def test_func(self):
-        """Security: Ensure only the owner can view this monitor."""
+        """Security: Ensure only the owner can view this endpoint."""
         return self.get_object().user == self.request.user
 
     def get_queryset(self):
-        """Optimization: Only look for monitors belonging to the user."""
+        """Optimization: Only look for endpoints belonging to the user."""
         return super().get_queryset().filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        monitor = self.object
+        endpoint = self.object
 
         # 1. Get logs from the last 24 hours for the chart
         last_24h = timezone.now() - timedelta(hours=24)
-        chart_logs = monitor.logs.filter(timestamp__gte=last_24h).order_by("timestamp")
+        chart_logs = endpoint.logs.filter(timestamp__gte=last_24h).order_by("timestamp")
 
         # 2. Format data for Chart.js
         # We use .strftime to make the timestamps readable in JS
@@ -48,15 +48,15 @@ class APIDetailsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         ]
 
         # 3. Calculate Uptime %
-        total_logs = monitor.logs.count()
+        total_logs = endpoint.logs.count()
         if total_logs > 0:
-            online_logs = monitor.logs.filter(is_online=True).count()
+            online_logs = endpoint.logs.filter(is_online=True).count()
             context["uptime_percentage"] = round((online_logs / total_logs) * 100, 1)
         else:
             context["uptime_percentage"] = 0
 
         # 4. Average Latency
-        avg = monitor.logs.aggregate(Avg("latency"))["latency__avg"]
+        avg = endpoint.logs.aggregate(Avg("latency"))["latency__avg"]
         context["avg_latency"] = round(avg, 3) if avg else 0
 
         context["base_template"] = (
@@ -67,7 +67,7 @@ class APIDetailsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 class AddAPIView(LoginRequiredMixin, CreateView):
-    model = Monitor
+    model = Endpoint
     form_class = AddAPIForm
     template_name = "monitors/partials/add_api_form.html"
     success_url = reverse_lazy("dashboard")
@@ -83,9 +83,9 @@ class AddAPIView(LoginRequiredMixin, CreateView):
         # 3. HTMX Response
         if self.request.htmx:
             # Get fresh stats after the save
-            context = get_monitor_stats(self.request.user)
-            # Add the new monitor object to context for the row partial
-            context["monitor"] = self.object
+            context = get_endpoint_stats(self.request.user)
+            # Add the new endpoint object to context for the row partial
+            context["endpoint"] = self.object
 
             response = render(
                 self.request, "monitors/partials/save_monitor_response.html", context
@@ -106,13 +106,13 @@ class AddAPIView(LoginRequiredMixin, CreateView):
 
 
 class UpdateAPIView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Monitor
+    model = Endpoint
     form_class = AddAPIForm
     template_name = "monitors/partials/edit_api_form.html"
     success_url = reverse_lazy("dashboard")
 
     def test_func(self):
-        """Security: Ensure only the owner can edit this monitor."""
+        """Security: Ensure only the owner can edit this endpoint."""
         return self.get_object().user == self.request.user
 
     def form_valid(self, form):
@@ -122,8 +122,8 @@ class UpdateAPIView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # 2. HTMX Response
         if self.request.htmx:
             # Use the shared helper for accurate stats
-            context = get_monitor_stats(self.request.user)
-            context["monitor"] = self.object  # Pass the updated object
+            context = get_endpoint_stats(self.request.user)
+            context["endpoint"] = self.object  # Pass the updated object
 
             response = render(
                 self.request, "monitors/partials/update_monitor_response.html", context
@@ -145,11 +145,11 @@ class UpdateAPIView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 
 class MonitorDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Monitor
+    model = Endpoint
     success_url = reverse_lazy("dashboard")
 
     def test_func(self):
-        """Security: Ensure only the owner can delete this monitor."""
+        """Security: Ensure only the owner can delete this endpoint."""
         return self.get_object().user == self.request.user
 
     def delete(self, request, *args, **kwargs):
@@ -159,7 +159,7 @@ class MonitorDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
         # 2. HTMX Response
         if request.htmx:
-            context = get_monitor_stats(request.user)
+            context = get_endpoint_stats(request.user)
 
             return render(request, "monitors/partials/stats.html", context)
 
@@ -167,18 +167,18 @@ class MonitorDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class MonitorAPIView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
-    model = Monitor
+    model = Endpoint
 
     def test_func(self):
         return self.get_object().user == self.request.user
 
     def post(self, request, *args, **kwargs):
-        monitor = self.get_object()
+        endpoint = self.get_object()
 
-        check_api_task.delay(monitor.id)
+        check_api_task.delay(endpoint.id)
 
-        context = get_monitor_stats(request.user)
-        context["monitor"] = monitor
+        context = get_endpoint_stats(request.user)
+        context["endpoint"] = endpoint
         context["is_checking"] = True
 
         return render(
@@ -187,14 +187,14 @@ class MonitorAPIView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin,
 
 
 class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    model = Monitor
+    model = Endpoint
     template_name = "monitors/partials/update_monitor_response.html"
-    context_object_name = "monitor"
+    context_object_name = "endpoint"
 
     def test_func(self):
         return self.get_object().user == self.request.user
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(get_monitor_stats(self.request.user))
+        context.update(get_endpoint_stats(self.request.user))
         return context

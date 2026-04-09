@@ -2,31 +2,31 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.list import ListView
 
-from monitors.models import Monitor, MonitorLog
+from monitors.models import Endpoint, EndpointLog
 
 
 class LogsView(LoginRequiredMixin, ListView):
-    model = MonitorLog
+    model = EndpointLog
     template_name = "monitors/logs.html"
     context_object_name = "logs"
     paginate_by = 25
 
     def get_queryset(self):
         qs = (
-            MonitorLog.objects.filter(monitor__user=self.request.user)
-            .select_related("monitor")
+            EndpointLog.objects.filter(endpoint__user=self.request.user)
+            .select_related("endpoint")
             .order_by("-timestamp")
         )
 
-        monitor_id = self.request.GET.get("monitor_id")
-        if monitor_id:
-            qs = qs.filter(monitor_id=monitor_id)
+        endpoint_id = self.request.GET.get("endpoint_id")
+        if endpoint_id:
+            qs = qs.filter(endpoint_id=endpoint_id)
 
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["user_monitors"] = Monitor.objects.filter(user=self.request.user)
+        context["user_endpoints"] = Endpoint.objects.filter(user=self.request.user)
         context["base_template"] = (
             "partials/content_base.html" if self.request.htmx else "base.html"
         )
@@ -34,8 +34,8 @@ class LogsView(LoginRequiredMixin, ListView):
 
     def render_to_response(self, context, **response_kwargs):
         if self.request.htmx:
-            if self.request.GET.get("monitor_id"):
-                # If a specific monitor is selected, we only update the table body
+            if self.request.GET.get("endpoint_id"):
+                # If a specific endpoint is selected, we only update the table body
                 return render(
                     self.request, "monitors/partials/log_table_body.html", context
                 )

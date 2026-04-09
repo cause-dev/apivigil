@@ -1,10 +1,10 @@
 from django import forms
-from .models import Monitor
+from .models import Endpoint
 
 
 class AddAPIForm(forms.ModelForm):
     class Meta:
-        model = Monitor
+        model = Endpoint
         fields = ["name", "url", "expected_status_code", "is_active"]
 
         # Add DaisyUI classes to make the form look good

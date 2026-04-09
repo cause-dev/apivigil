@@ -1,5 +1,5 @@
 from celery import shared_task
-from .models import Monitor
+from .models import Endpoint
 from .services import MonitorService
 
 
@@ -9,21 +9,21 @@ def check_api_task(api_id):
     Background task to ping a specific monitor.
     """
     try:
-        monitor = Monitor.objects.get(id=api_id)
-        service = MonitorService(monitor)
+        endpoint = Endpoint.objects.get(id=api_id)
+        service = MonitorService(endpoint)
         service.run_check()
-        return f"Successfully checked {monitor.name}"
-    except Monitor.DoesNotExist:
-        return f"Monitor with id {api_id} no longer exists."
+        return f"Successfully checked {endpoint.name}"
+    except Endpoint.DoesNotExist:
+        return f"Endpoint with id {api_id} no longer exists."
 
 
 @shared_task
 def check_all_apis_task():
     """
-    Background task to ping all monitors.
+    Background task to ping all endpoints.
     """
-    active_monitors = Monitor.objects.filter(is_active=True)
-    for monitor in active_monitors:
-        check_api_task.delay(monitor.id)
+    active_endpoints = Endpoint.objects.filter(is_active=True)
+    for endpoint in active_endpoints:
+        check_api_task.delay(endpoint.id)
 
-    return f"Scheduled checks for {active_monitors.count()} monitors."
+    return f"Scheduled checks for {active_endpoints.count()} endpoints."

@@ -1,19 +1,19 @@
 from django.contrib import admin
-from .models import Monitor, MonitorLog
+from .models import Endpoint, EndpointLog
 
 # Register your models here.
 
 
-@admin.register(Monitor)
-class MonitorAdmin(admin.ModelAdmin):
+@admin.register(Endpoint)
+class EndpointAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "url", "expected_status_code", "created_at")
     list_filter = ("expected_status_code", "created_at")
     search_fields = ("name", "url")
     ordering = ("-created_at",)
 
 
-@admin.register(MonitorLog)
-class MonitorLogAdmin(admin.ModelAdmin):
+@admin.register(EndpointLog)
+class EndpointLogAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "monitor",

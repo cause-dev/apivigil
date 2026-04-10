@@ -173,12 +173,16 @@ class DeleteEndpointView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             context["endpoints"] = endpoints
             print(context)
 
-            return render(request, T["MONITORS"]["PARTIALS"]["HTMX_RESPONSE"], context)
+            return render(
+                request, "monitors/dashboard/partials/htmx-response.html", context
+            )
 
         return super().delete(request, *args, **kwargs)
 
 
-class EndpointCheckView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
+class EndpointCheckView(
+    LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View
+):
     model = Endpoint
 
     def test_func(self):

@@ -1,6 +1,6 @@
 {% include T.LAYOUT.PARTIALS.MESSAGES %}
 
-{% include T.MONITORS.PARTIALS.STATS %}
+{% include 'monitors/dashboard/partials/stats.html' %}
 
 <!-- 2. The Table Section -->
 <div class="card bg-base-100 border border-base-300 shadow-sm mt-8">
@@ -19,7 +19,7 @@
         </tr>
       </thead>
       <tbody id="endpoint-table-body">
-        {% include T.MONITORS.PARTIALS.ENDPOINTS.LIST with object_list=endpoints %}
+        {% include 'monitors/endpoint/partials/list.html' with object_list=endpoints %}
       </tbody>
     </table>
   </div>

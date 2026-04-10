@@ -14,7 +14,7 @@ urlpatterns = [
     ),
     path(
         "endpoint/<int:pk>/check/",
-        views.MonitorAPIView.as_view(),
+        views.EndpointCheckView.as_view(),
         name="check_endpoint",
     ),
     path("endpoint/<int:pk>/row/", views.MonitorRowView.as_view(), name="endpoint_row"),

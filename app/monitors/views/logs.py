@@ -8,7 +8,7 @@ from monitors.models import Endpoint, EndpointLog
 
 class LogsView(LoginRequiredMixin, ListView):
     model = EndpointLog
-    template_name = T["MONITORS"]["LOGS"]
+    template_name = "monitors/logs/logs.html"
     paginate_by = 25
 
     def get_queryset(self):
@@ -31,10 +31,12 @@ class LogsView(LoginRequiredMixin, ListView):
 
     def render_to_response(self, context, **response_kwargs):
         if self.request.htmx:
-            if self.request.GET.get("endpoint_id"):
-                # If a specific endpoint is selected, we only update the table body
+            target = self.request.headers.get("HX-Target")
+            if target == "log-table-body":
                 return render(
-                    self.request, "monitors/partials/log_table_body.html", context
+                    self.request, "monitors/logs/partials/table_body.html", context
                 )
+            else:
+                return render(self.request, self.template_name, context)
 
         return super().render_to_response(context, **response_kwargs)

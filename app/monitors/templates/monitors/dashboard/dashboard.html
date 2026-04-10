@@ -11,12 +11,12 @@
   <div class="space-y-8">
     <!-- 2. Header Section (Static - Outside the poll) -->
     <!-- This ensures the "New Monitor" button doesn't reload during pings -->
-    {% include T.MONITORS.PARTIALS.HEADER %}
+    {% include 'monitors/dashboard/partials/header.html' %}
 
     <!-- 3. Dynamic Content Area (Stats & Table) -->
     <div id="poll-container" class="space-y-8" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 10s" hx-target="this" hx-swap="innerHTML">
       <!-- Stats Row -->
-      {% include T.MONITORS.PARTIALS.STATS %}
+      {% include 'monitors/dashboard/partials/stats.html' %}
 
       <!-- Table Section -->
       <div class="card bg-base-100 border border-base-300 shadow-sm">
@@ -36,7 +36,7 @@
             </thead>
             <!-- Ensure this ID matches your OOB swap target from previous steps -->
             <tbody id="endpoint-table-body">
-              {% include T.MONITORS.PARTIALS.ENDPOINTS.LIST %}
+              {% include 'monitors/endpoint/partials/list.html' %}
             </tbody>
           </table>
         </div>
@@ -45,5 +45,5 @@
   </div>
 
   <!-- THE MODAL STRUCTURE (Static - Outside the poll) -->
-  {% include T.MONITORS.PARTIALS.ENDPOINTS.MODAL %}
+  {% include 'monitors/endpoint/partials/modal.html' %}
 {% endblock %}

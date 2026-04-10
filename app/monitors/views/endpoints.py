@@ -22,7 +22,7 @@ from monitors.forms import EndpointForm
 # --- 1. DETAIL VIEW ---
 class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Endpoint
-    template_name = T["MONITORS"]["DETAILS"]
+    template_name = "monitors/endpoint/endpoint.html"
 
     def test_func(self):
         """Security: Ensure only the owner can view this endpoint."""
@@ -178,7 +178,7 @@ class DeleteEndpointView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class MonitorAPIView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
+class EndpointCheckView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
     model = Endpoint
 
     def test_func(self):
@@ -193,7 +193,7 @@ class MonitorAPIView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin,
         context["endpoint"] = endpoint
         context["is_checking"] = True
 
-        return render(request, T["MONITORS"]["PARTIALS"]["HTMX_RESPONSE"], context)
+        return render(request, T["LAYOUT"]["HTMX_BASE"], context)
 
 
 class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):

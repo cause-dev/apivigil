@@ -1,0 +1,15 @@
+{% extends base_template %}
+
+{% block title %}
+  Logs - ApiVigil
+{% endblock %}
+
+{% block content %}
+  {% include T.LAYOUT.PARTIALS.BREADCRUMBS with page_breadcrumb='Logs' %}
+  <div class="space-y-6 pt-4" id="logs-container">
+    {% include 'monitors/logs/partials/header.html' %}
+    {% include 'monitors/logs/partials/table.html' %}
+
+    {% include 'monitors/logs/partials/pagination.html' %}
+  </div>
+{% endblock %}

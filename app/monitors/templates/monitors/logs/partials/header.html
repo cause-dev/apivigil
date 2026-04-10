@@ -1,0 +1,19 @@
+<div class="flex justify-between items-center w-full">
+    <h1 class="text-3xl font-bold">Event Logs</h1>
+
+    <div class="w-full max-w-xs"> 
+        <select name="endpoint_id" 
+                class="select select-bordered" 
+                hx-get="{% url 'endpoint_logs' %}"
+                hx-target="#log-table-body" 
+                hx-push-url="true" 
+                hx-swap="innerHTML">
+            <option value="">All Endpoints</option>
+            {% for m in user_endpoints %}
+                <option value="{{ m.id }}" {% if m.id|stringformat:"s" == request.GET.endpoint_id %}selected{% endif %}>
+                    {{ m.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>

@@ -3,7 +3,7 @@ from .endpoints import (
     AddEndpointView,
     EndpointView,
     MonitorRowView,
-    MonitorAPIView,
+    EndpointCheckView,
     DeleteEndpointView,
     UpdateEndpointView,
 )

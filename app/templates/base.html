@@ -8,8 +8,8 @@
         ApiVigil
       {% endblock %}
     </title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       /* Ensures the footer stays at the bottom of the page */
@@ -42,19 +42,14 @@
     {% include 'partials/header.html' %}
 
     <!-- MAIN CONTENT AREA -->
-    <main class="container mx-auto p-4 md:p-8" id="main-content">
+    <main class="container mx-auto p-4 md:p-8">
       {% include T.LAYOUT.PARTIALS.MESSAGES %}
       <!-- This is where your child templates will inject their content -->
-      {% block content %}
-        # You can include breadcrumb here<div class="hero bg-base-100 rounded-box p-10 shadow-xl">
-          <div class="hero-content text-center">
-            <div class="max-w-md">
-              <h1 class="text-5xl font-bold">Hello there</h1>
-              <p class="py-6">Welcome to ApiVigil. This is the default base content.</p>
-            </div>
-          </div>
-        </div>
-      {% endblock %}
+      <div id="main-content">
+        {% block content %}
+
+        {% endblock %}
+      </div>
     </main>
 
     {% include 'partials/footer.html' %}

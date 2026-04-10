@@ -8,7 +8,7 @@
   <td>
   <div class="flex flex-col">
     <!-- Link the name to the detail view -->
-    <a href="{% url 'endpoint' item.id %}" hx-get="{% url 'endpoint' item.id %}" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">
+    <a href="{% url 'endpoint' item.id %}" hx-boost="true" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">
         {{ item.name }}
     </a>
     <span class="text-xs opacity-50 font-mono">{{ item.url|truncatechars:40 }}</span>
@@ -75,7 +75,7 @@
         </div>
         <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40 border border-base-300">
           <li>
-            <a href="{% url 'endpoint_logs' %}?endpoint_id={{ item.id }}" hx-boost="true">View Logs</a>
+            <a href="{% url 'endpoint_logs' %}?endpoint_id={{ item.id }}" hx-boost="true" hx-target="#main-content">View Logs</a>
           </li>
           <li>
             <button type="button" 

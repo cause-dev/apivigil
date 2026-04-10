@@ -9,7 +9,7 @@ from monitors.models import Endpoint
 
 class DashboardView(LoginRequiredMixin, ListView):
     model = Endpoint
-    template_name = T["MONITORS"]["DASHBOARD"]
+    template_name = "monitors/dashboard/dashboard.html"
 
     def get_queryset(self):
         # Always filter by current user and newest first
@@ -23,7 +23,7 @@ class DashboardView(LoginRequiredMixin, ListView):
 
 
 class DashboardPollView(LoginRequiredMixin, TemplateView):
-    template_name = T["MONITORS"]["PARTIALS"]["HTMX_RESPONSE"]
+    template_name = "monitors/dashboard/partials/htmx-response.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

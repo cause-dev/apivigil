@@ -27,9 +27,6 @@ class LogsView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["user_endpoints"] = Endpoint.objects.filter(user=self.request.user)
-        context["base_template"] = (
-            T["LAYOUT"]["HTMX_BASE"] if self.request.htmx else T["LAYOUT"]["BASE"]
-        )
         return context
 
     def render_to_response(self, context, **response_kwargs):

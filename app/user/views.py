@@ -6,7 +6,6 @@ from django.contrib.auth.views import (
 )
 from django.views.generic import CreateView
 
-from config.template_registry import T
 from .forms import SignUpForm, LoginForm
 
 # Create your views here.
@@ -16,13 +15,6 @@ class RegisterView(CreateView):
     form_class = SignUpForm
     template_name = "user/register.html"
     success_url = reverse_lazy("login")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["base_template"] = (
-            T["LAYOUT"]["HTMX_BASE"] if self.request.htmx else T["LAYOUT"]["BASE"]
-        )
-        return context
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -41,13 +33,6 @@ class LoginView(DjangoLoginView):
     template_name = "user/login.html"
     authentication_form = LoginForm
     success_url = reverse_lazy("dashboard")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["base_template"] = (
-            T["LAYOUT"]["HTMX_BASE"] if self.request.htmx else T["LAYOUT"]["BASE"]
-        )
-        return context
 
     def form_valid(self, form):
         messages.success(self.request, "You have successfully logged in.")

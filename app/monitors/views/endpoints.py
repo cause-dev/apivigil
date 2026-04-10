@@ -52,10 +52,6 @@ class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context["uptime_percentage"] = obj.uptime_percentage
         context["avg_latency"] = obj.avg_latency
 
-        context["base_template"] = (
-            T["LAYOUT"]["HTMX_BASE"] if self.request.htmx else T["LAYOUT"]["BASE"]
-        )
-
         return context
 
 

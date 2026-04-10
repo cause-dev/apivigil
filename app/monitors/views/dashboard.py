@@ -19,9 +19,6 @@ class DashboardView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         # Merges our stats helper into the template context
         context.update(get_endpoint_stats(self.request.user))
-        context["base_template"] = (
-            T["LAYOUT"]["HTMX_BASE"] if self.request.htmx else T["LAYOUT"]["BASE"]
-        )
         return context
 
 

@@ -58,7 +58,7 @@ class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 class AddEndpointView(LoginRequiredMixin, CreateView):
     model = Endpoint
     form_class = EndpointForm
-    template_name = T["MONITORS"]["PARTIALS"]["ENDPOINTS"]["FORM"]
+    template_name = "monitors/endpoint/partials/form.html"
     success_url = reverse_lazy("dashboard")
 
     def get_context_data(self, **kwargs):
@@ -89,7 +89,7 @@ class AddEndpointView(LoginRequiredMixin, CreateView):
             context["endpoints"] = endpoints
 
             response = render(
-                self.request, T["MONITORS"]["PARTIALS"]["HTMX_RESPONSE"], context
+                self.request, "monitors/dashboard/partials/htmx-response.html", context
             )
 
             return trigger_client_event(response, "modalClose", {})
@@ -135,7 +135,7 @@ class UpdateEndpointView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             context["endpoints"] = endpoints
 
             response = render(
-                self.request, T["MONITORS"]["PARTIALS"]["HTMX_RESPONSE"], context
+                self.request, "monitors/dashboard/partials/htmx-response.html", context
             )
             # Trigger the client-side event to close the modal
             return trigger_client_event(response, "modalClose", {})

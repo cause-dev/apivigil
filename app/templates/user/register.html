@@ -12,45 +12,14 @@
         <h2 class="card-title text-2xl font-bold mb-2 flex gap-2"><span class="text-primary">🚀</span> Create Account</h2>
         <p class="text-sm opacity-60 mb-4">Join ApiVigil to start monitoring your endpoints.</p>
 
-        <!-- DJANGO MESSAGES -->
-        {% if messages %}
-          <div class="space-y-2 mb-4">
-            {% for message in messages %}
-              <div role="alert"
-                class="alert {% if message.tags == 'error' %}
-                  
-                  
-                  
-                  
-                  
-                  alert-error
-
-
-
-
-
-                {% else %}
-                  
-                  
-                  
-                  
-                  
-                  alert-{{ message.tags }}
-                {% endif %} shadow-sm py-2">
-                <span>{{ message }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-
         <!-- REGISTRATION FORM -->
-        <form method="post" class="space-y-6">
+        <form hx-post="{% url 'register' %}" hx-target="this" hx-swap="outerHTML" class="space-y-6">
           {% csrf_token %}
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {% for field in form %}
-              <!--       Some fields like 'email' or 'username' look better full width, 
-                             but for a cleaner look we'll stack them or grid them       -->
+              <!--         Some fields like 'email' or 'username' look better full width, 
+                             but for a cleaner look we'll stack them or grid them         -->
               <div class="fieldset {% if field.name == 'username' or field.name == 'email' %}md:col-span-2{% endif %}">
                 <label class="fieldset-legend font-semibold">
                   {{ field.label }}

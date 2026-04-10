@@ -43,6 +43,7 @@
 
     <!-- MAIN CONTENT AREA -->
     <main class="container mx-auto p-4 md:p-8" id="main-content">
+      {% include T.LAYOUT.PARTIALS.MESSAGES %}
       <!-- This is where your child templates will inject their content -->
       {% block content %}
         # You can include breadcrumb here<div class="hero bg-base-100 rounded-box p-10 shadow-xl">
@@ -70,6 +71,10 @@
       document.body.addEventListener('htmx:afterSwap', function () {
         window.scrollTo(0, 0)
       })
+      
+      setTimeout(() => {
+        document.getElementById('dashboard-messages').innerHTML = ''
+      }, 4000)
     </script>
   </body>
 </html>

@@ -28,7 +28,7 @@
             <span class="font-bold text-primary">{{ user.username }}</span>
           </li>
           <li>
-            <form method="post" action="{% url 'logout' %}">
+            <form hx-post="{% url 'logout' %}" hx-swap="none">
               {% csrf_token %}
               <button type="submit" class="btn btn-ghost btn-sm text-error w-full justify-start">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

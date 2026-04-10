@@ -33,6 +33,7 @@ LAYOUT = {
     "HTMX_BASE": "partials/htmx_base.html",
     "PARTIALS": {
         "BREADCRUMBS": "partials/breadcrumbs.html",
+        "MESSAGES": "partials/messages.html"
     },
 }
 

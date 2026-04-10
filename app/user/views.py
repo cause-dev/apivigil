@@ -1,5 +1,7 @@
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.views import (
     LoginView as DjangoLoginView,
     LogoutView as DjangoLogoutView,
@@ -22,10 +24,17 @@ class RegisterView(CreateView):
         messages.success(
             self.request, f"Account created for {username}! You can now log in."
         )
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response["HX-Redirect"] = self.get_success_url()
+            return response
         return response
 
     def form_invalid(self, form):
         messages.error(self.request, "Please correct the errors below.")
+        if self.request.htmx:
+            return self.render_to_response(self.get_context_data(form=form))
         return super().form_invalid(form)
 
 
@@ -35,11 +44,20 @@ class LoginView(DjangoLoginView):
     success_url = reverse_lazy("dashboard")
 
     def form_valid(self, form):
-        messages.success(self.request, "You have successfully logged in.")
+        login(self.request, form.get_user())
+        messages.success(self.request, "Welcome back! You have successfully logged in.")
+
+        if self.request.htmx:
+            response = HttpResponse()
+            response["HX-Redirect"] = self.get_success_url()
+            return response
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, "Invalid username or password. Please try again.")
+        if self.request.htmx:
+            return self.render_to_response(self.get_context_data(form=form))
         return super().form_invalid(form)
 
 
@@ -47,5 +65,10 @@ class LogoutView(DjangoLogoutView):
     next_page = reverse_lazy("login")
 
     def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
         messages.success(request, "You have been logged out.")
-        return super().dispatch(request, *args, **kwargs)
+        if request.htmx:
+            response = HttpResponse()
+            response["HX-Redirect"] = self.next_page
+            return response
+        return response

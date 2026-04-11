@@ -49,9 +49,6 @@ class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             log.latency if log.latency else 0 for log in chart_logs
         ]
 
-        context["uptime_percentage"] = obj.uptime_percentage
-        context["avg_latency"] = obj.avg_latency
-
         return context
 
 
@@ -188,6 +185,13 @@ class EndpointCheckView(
     def test_func(self):
         return self.get_object().user == self.request.user
 
+    def get(self, request, *args, **kwargs):
+        endpoint = self.get_object()
+        context = get_endpoint_stats(request.user)
+        context["endpoint"] = endpoint
+
+        return render(request, "monitors/endpoint/partials/htmx_row.html", context)
+
     def post(self, request, *args, **kwargs):
         endpoint = self.get_object()
 
@@ -195,9 +199,32 @@ class EndpointCheckView(
 
         context = get_endpoint_stats(request.user)
         context["endpoint"] = endpoint
-        context["is_checking"] = True
 
-        return render(request, T["LAYOUT"]["HTMX_BASE"], context)
+        last_24h = timezone.now() - timedelta(hours=24)
+        chart_logs = endpoint.logs.filter(timestamp__gte=last_24h).order_by("timestamp")
+
+        if request.htmx:
+            target = self.request.headers.get("HX-Target")
+            if target == "endpoint-details":
+                context["chart_labels"] = [
+                    log.timestamp.strftime("%H:%M") for log in chart_logs
+                ]
+                context["chart_data"] = [
+                    log.latency if log.latency else 0 for log in chart_logs
+                ]
+                template = "monitors/endpoint/partials/endpoint_htmx_response.html"
+
+            else:
+                context["is_checking"] = True
+                template = "monitors/endpoint/partials/htmx_row.html"
+
+            return render(
+                request,
+                template,
+                context,
+            )
+
+        return context
 
 
 class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):

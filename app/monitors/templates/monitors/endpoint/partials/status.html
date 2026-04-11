@@ -1,0 +1,33 @@
+<td>
+  <div class="badge badge-outline badge-sm">{{ item.expected_status_code }}</div>
+</td>
+
+<td>
+  <h1>{{ is_checking }}</h1>
+  {% if is_checking %}
+    <div class="badge badge-warning gap-2 animate-pulse">
+      <span class="loading loading-spinner loading-xs"></span>
+      Checking...
+    </div>
+  {% elif not item.is_active %}
+    <div class="badge badge-ghost gap-2">Paused</div>
+  {% elif item.is_online %}
+    <div class="badge badge-success gap-2">
+      <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Healthy
+    </div>
+  {% else %}
+    <div class="badge badge-error gap-2">
+      <span class="w-2 h-2 rounded-full bg-white"></span> Down
+    </div>
+  {% endif %}
+</td>
+
+<td class="text-sm">
+  {% if is_checking %}
+    <span class="italic opacity-50">Checking now...</span>
+  {% elif item.last_checked %}
+    {{ item.last_checked|timesince }} ago
+  {% else %}
+    <span class="italic opacity-30">Never</span>
+  {% endif %}
+</td>

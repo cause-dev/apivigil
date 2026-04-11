@@ -14,7 +14,7 @@
     {% include 'monitors/dashboard/partials/header.html' %}
 
     <!-- 3. Dynamic Content Area (Stats & Table) -->
-    <div id="poll-container" class="space-y-8" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 10s" hx-target="this" hx-swap="innerHTML">
+    <div id="poll-container" class="space-y-8" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 60s" hx-target="this" hx-swap="innerHTML">
       <!-- Stats Row -->
       {% include 'monitors/dashboard/partials/stats.html' %}
 

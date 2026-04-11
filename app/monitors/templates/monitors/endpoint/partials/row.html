@@ -1,111 +1,13 @@
-<tr id="endpoint-row-{{ item.id }}" 
-    class="hover:bg-base-200/50 transition-colors"
-    {% if is_checking %}
-      hx-get="{% url 'endpoint' item.id %}"
-      hx-trigger="load delay:3s"
-    {% endif %}>
-    
+<tr id="endpoint-row-{{ item.id }}" class="hover:bg-base-200/50 transition-colors">
   <td>
-  <div class="flex flex-col">
-    <!-- Link the name to the detail view -->
-    <a href="{% url 'endpoint' item.id %}" hx-boost="true" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">
-        {{ item.name }}
-    </a>
-    <span class="text-xs opacity-50 font-mono">{{ item.url|truncatechars:40 }}</span>
-  </div>
-</td>
-
-  <td>
-    <div class="badge badge-outline badge-sm">{{ item.expected_status_code }}</div>
-  </td>
-
-  <td>
-    {% if is_checking %}
-      <div class="badge badge-warning gap-2 animate-pulse">
-        <span class="loading loading-spinner loading-xs"></span>
-        Checking...
-      </div>
-    {% elif not item.is_active %}
-      <div class="badge badge-ghost gap-2">Paused</div>
-    {% elif item.is_online %}
-      <div class="badge badge-success gap-2">
-        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Healthy
-      </div>
-    {% else %}
-      <div class="badge badge-error gap-2">
-        <span class="w-2 h-2 rounded-full bg-white"></span> Down
-      </div>
-    {% endif %}
-  </td>
-
-  
-
-  <td class="text-sm">
-    {% if is_checking %}
-      <span class="italic opacity-50">Checking now...</span>
-    {% elif item.last_checked %}
-      {{ item.last_checked|timesince }} ago
-    {% else %}
-      <span class="italic opacity-30">Never</span>
-    {% endif %}
-  </td>
-
-  <td class="text-right">
-    <div class="flex justify-end items-center gap-2">
-      
-      <!-- CHECK NOW BUTTON (Hidden while checking to prevent double-clicks) -->
-      {% if not is_checking %}
-      <button hx-post="{% url 'check_endpoint' item.id %}" 
-              hx-indicator="#check-spinner-{{ item.id }}" 
-              class="btn btn-ghost btn-xs tooltip" 
-              data-tip="Check Now">
-        <span id="check-spinner-{{ item.id }}" class="htmx-indicator loading loading-spinner loading-xs text-primary"></span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 htmx-dis-element" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      </button>
-      {% endif %}
-
-      <!-- YOUR ACTIONS DROPDOWN -->
-      <div class="dropdown dropdown-left">
-        <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-square">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-          </svg>
-        </div>
-        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40 border border-base-300">
-          <li>
-            <a href="{% url 'endpoint_logs' %}?endpoint_id={{ item.id }}" hx-boost="true" hx-target="#main-content">View Logs</a>
-          </li>
-          <li>
-            <button type="button" 
-                    hx-get="{% url 'edit_endpoint' item.id %}" 
-                    hx-target="#endpoint_modal_content" 
-                    onclick="endpoint_modal.showModal()">Edit</button>
-          </li>
-          <li>
-            <button type="button" onclick="delete_modal_{{ item.id }}.showModal()" class="text-error">Delete</button>
-          </li>
-        </ul>
-      </div>
+    <div class="flex flex-col">
+      <!-- Link the name to the detail view -->
+      <a href="{% url 'endpoint' item.id %}" hx-boost="true" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">{{ item.name }}</a>
+      <span class="text-xs opacity-50 font-mono">{{ item.url|truncatechars:40 }}</span>
     </div>
-
-    <!-- YOUR DELETE MODAL -->
-    <dialog id="delete_modal_{{ item.id }}" class="modal">
-      <div class="modal-box text-left">
-        <h3 class="font-bold text-lg text-error">Delete object?</h3>
-        <p class="py-4">Are you sure you want to delete <strong>{{ item.name }}</strong>?</p>
-        <div class="modal-action">
-          <button type="button" 
-                  hx-delete="{% url 'delete_endpoint' item.id %}" 
-                  hx-target="#poll-container" 
-                  hx-swap="innerHTML" 
-                  onclick="delete_modal_{{ item.id }}.close()" 
-                  class="btn btn-error">Confirm Delete</button>
-          <button type="button" onclick="delete_modal_{{ item.id }}.close()" class="btn btn-ghost">Cancel</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
   </td>
+
+  {% include 'monitors/endpoint/partials/status.html' %}
+
+  {% include 'monitors/endpoint/partials/actions.html' %}
 </tr>

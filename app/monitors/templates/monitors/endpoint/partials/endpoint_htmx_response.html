@@ -1,0 +1,70 @@
+<div id="endpoint-details" class="space-y-6">
+  <!-- 1. Stats Row -->
+  <div class="stats shadow bg-base-100 border border-base-300 w-full">
+    <div class="stat">
+      <div class="stat-title">Current Status</div>
+      <!-- CLEANED: No massive whitespace blocks here -->
+      <div class="stat-value {{ endpoint.is_online|yesno:'text-success,text-error' }}">{{ endpoint.is_online|yesno:'Online,Down' }}</div>
+      <div class="stat-desc">Last checked {{ endpoint.last_checked|timesince }} ago</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Uptime (All time)</div>
+      <div class="stat-value text-primary">{{ endpoint.uptime_percentage }}%</div>
+      <div class="stat-desc">Based on {{ endpoint.logs.count }} checks</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Avg. Latency</div>
+      <div class="stat-value text-secondary">{{ endpoint.avg_latency }}s</div>
+      <div class="stat-desc">Response time</div>
+    </div>
+  </div>
+
+  <!-- 2. Chart Section -->
+  <div class="card bg-base-100 border border-base-300 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-base-content/50 text-sm uppercase tracking-widest">Latency (Last 24 Hours)</h2>
+      <div class="h-64 w-full">
+        <canvas id="latencyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Recent Logs Table -->
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="p-6 pb-0">
+      <h2 class="text-xl font-bold">Recent Events</h2>
+    </div>
+    <div class="overflow-x-auto p-4">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Latency</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in endpoint.logs.all|slice:':10' %}
+            <tr>
+              <td>
+                {% if log.is_online %}
+                  <span class="badge badge-success badge-xs"></span> Healthy
+                {% else %}
+                  <span class="badge badge-error badge-xs"></span> Down
+                {% endif %}
+              </td>
+              <td class="font-mono text-xs">{{ log.latency|floatformat:3 }}s</td>
+              <td class="opacity-50 text-xs">{{ log.timestamp|date:'H:i:s (M d)' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart Setup -->
+  {{ chart_labels|json_script:'labels-data' }}
+  {{ chart_data|json_script:'latency-data' }}
+</div>

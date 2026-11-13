@@ -1,0 +1,110 @@
+name: "apivigil"
+services:
+  db:
+    image: "dhi.io/postgres:18.6-alpine3.24"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "apivigil"
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "apivigil"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: "dhi.io/redis:8.8.4-alpine3.24"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: "../app"
+      dockerfile: "Containerfile"
+      target: "development"
+    env_file:
+      - ../app/.env
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ../app:/app:z
+      - uv_cache:/root/.cache/uv
+      - uv_venv:/app/.venv
+      - zed_server:/root/.zed_server
+      - zed_data:/root/.local/share/zed
+    command: ["bash", "./scripts/entrypoint.dev.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: "../app"
+      dockerfile: "Containerfile"
+      target: "development"
+    env_file:
+      - ../app/.env
+    volumes:
+      - ../app:/app:z
+      - uv_cache:/root/.cache/uv
+      - uv_venv:/app/.venv
+    command:
+      - uv
+      - run
+      - celery
+      - -A
+      - config
+      - worker
+      - --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build:
+      context: "../app"
+      dockerfile: "Containerfile"
+      target: "development"
+    env_file:
+      - ../app/.env
+    volumes:
+      - ../app:/app:z
+      - uv_cache:/root/.cache/uv
+      - uv_venv:/app/.venv
+    command:
+      - uv
+      - run
+      - celery
+      - -A
+      - config
+      - beat
+      - --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  data:
+  uv_venv:
+  zed_server:
+    external: true
+    name: zed_server
+  zed_data:
+    external: true
+    name: zed_data
+  uv_cache:
+    external: true
+    name: uv_cache

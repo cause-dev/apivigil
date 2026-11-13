@@ -1,0 +1,64 @@
+{
+	"file_types": {
+		"Django": ["**/templates/**/*.html"]
+	},
+	"file_scan_exclusions": [
+		"**/__pycache__",
+		"**/.pytest_cache",
+		"**/.ruff_cache",
+		"**/.mypy_cache",
+		"..."
+	],
+	"languages": {
+		"Python": {
+			"tab_size": 4,
+			"hard_tabs": false,
+			"language_servers": ["basedpyright", "ruff"],
+			"format_on_save": "on",
+			"formatter": {
+				"language_server": {
+					"name": "ruff"
+				}
+			},
+			"code_actions_on_format": {
+				"source.fixAll.ruff": true,
+				"source.organizeImports.ruff": true
+			}
+		},
+		"Django": {
+			"tab_size": 4,
+			"formatter": {
+				"external": {
+					"command": "/app/.venv/bin/djlint",
+					"arguments": [
+						"-",
+						"--reformat",
+						"--profile=django",
+						"--stdin-filename",
+						"{buffer_path}"
+					]
+				}
+			},
+			"format_on_save": "on"
+		},
+		"TOML": {
+			"tab_size": 2
+		}
+	},
+	"lsp": {
+		"basedpyright": {
+			"binary": {
+				"path": "/app/.venv/bin/basedpyright-langserver",
+				"arguments": ["--stdio"]
+			},
+			"settings": {
+				"basedpyright": {
+					"analysis": {
+						"autoImportCompletions": true,
+						"diagnosticMode": "workspace"
+					}
+				}
+			}
+		}
+	}
+}

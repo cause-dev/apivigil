@@ -1,0 +1,128 @@
+ARG PYTHON_VERSION=3.15.2
+ARG UV_VERSION=0.13.7
+
+ARG UV_IMAGE=dhi.io/uv:${UV_VERSION}-debian13-dev
+ARG PYTHON_BUILD_IMAGE=dhi.io/python:${PYTHON_VERSION}-debian13-dev
+ARG PYTHON_IMAGE=dhi.io/python:${PYTHON_VERSION}-debian13
+
+# --------------------------------------------------
+# Development
+# --------------------------------------------------
+
+FROM ${UV_IMAGE} AS development
+
+ARG PYTHON_VERSION
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    UV_CACHE_DIR=/root/.cache/uv \
+    PATH="/app/.venv/bin:$PATH"
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    git netcat-openbsd bash curl gzip libstdc++6
+
+RUN uv python install ${PYTHON_VERSION} \
+    && uv venv --python ${PYTHON_VERSION} /app/.venv
+
+COPY pyproject.toml uv.lock ./
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --all-groups --no-install-project
+
+COPY . .
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --all-groups
+
+COPY --chmod=755 ./scripts/entrypoint.dev.sh /usr/local/bin/entrypoint.dev.sh
+
+EXPOSE 8000
+
+ENTRYPOINT [ "/usr/local/bin/entrypoint.dev.sh" ]
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+
+# --------------------------------------------------
+# Builder
+# --------------------------------------------------
+
+FROM ${PYTHON_BUILD_IMAGE} AS builder
+
+ARG UV_VERSION
+ARG UV_IMAGE
+
+COPY --from=development /usr/local/bin/uv \
+    /usr/local/bin/uvx /usr/local/bin/
+
+WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    UV_CACHE_DIR=/root/.cache/uv \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PYTHON_PREFERENCE=only-system
+
+COPY pyproject.toml uv.lock ./
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --no-install-project
+
+COPY . .
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --no-editable
+
+RUN python manage.py collectstatic --noinput
+
+
+# --------------------------------------------------
+# Production
+# --------------------------------------------------
+
+FROM ${PYTHON_IMAGE} AS production
+
+LABEL maintainer="cause.dev@proton.me" \
+    version="1.0.0" \
+    description="ApiVigil production runtime"
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HOME=/tmp \
+    PATH="/app/.venv/bin:${PATH}"
+
+COPY --from=builder --chown=65532:65532 /app/.venv /app/.venv
+
+COPY --chown=65532:65532 . .
+
+COPY --from=builder --chown=65532:65532 /app/staticfiles /app/staticfiles
+
+COPY --chown=65532:65532 scripts/entrypoint.prod.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+USER 65532:65532
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=4)"]
+
+ENTRYPOINT [ "/usr/bin/tini", "--", "/app/entrypoint.sh" ]
+
+CMD gunicorn config.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers "${WEB_CONCURRENCY:-2}" \
+    --threads 2 \
+    --timeout 60 \
+    --preload \
+    --access-logfile - \
+    --error-logfile -

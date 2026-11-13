@@ -32,22 +32,26 @@
 ### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/yourusername/apivigil.git
     cd apivigil
     ```
 
 2.  **Spin up the containers:**
+
     ```bash
     podman compose up --build
     ```
 
 3.  **Run Migrations:**
+
     ```bash
     podman exec -it backend uv run python manage.py migrate
     ```
 
 4.  **Create a Superuser:**
+
     ```bash
     podman exec -it backend uv run python manage.py createsuperuser
     ```
@@ -60,5 +64,6 @@
 The project uses a **Template Registry** (`config/template_registry.py`) to manage HTML paths centrally. This allows for easy renaming of apps or folders without breaking the views.
 
 Core environment variables (set in `docker-compose.yml`):
+
 -   `DATABASE_URL`: PostgreSQL connection string.
 -   `CELERY_BROKER_URL`: Redis connection string.

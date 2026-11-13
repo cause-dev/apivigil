@@ -1,0 +1,11 @@
+{
+	"name": "apivigil",
+	"dockerComposeFile": "./compose.yaml",
+	"service": "backend",
+	"workspaceFolder": "/app",
+	"customizations": {
+		"zed": {
+			"extensions": ["django", "emmet", "html-snippets", "python-snippets"]
+		}
+	}
+}

@@ -1,34 +1,50 @@
-set dotenv-load := true
+set dotenv-load
 
 default:
     @just --list
 
-compose args:
-    podman compose {{ args }}
-
-dev:
-    code .
-    podman compose up
+_compose args:
+    podman compose -f .devcontainer/compose.yaml {{ args }}
 
 up *args:
-    podman compose up {{ args }}
+    @just _compose up {{ args }}
 
 down *args:
-    podman compose down {{ args }}
-    podman volume ls -q | grep -E '_[a-f0-9]{32,}$' | xargs -r podman volume rm
+    @just _compose down {{ args }}
 
 restart *args:
-    podman compose restart {{ args }}
+    @just _compose restart {{ args }}
 
 logs *args:
-    podman compose logs -f {{ args }}
+    @just _compose logs -f {{ args }}
 
-migrate:
-    podman compose exec backend uv run python manage.py makemigrations
-    podman compose exec backend uv run python manage.py migrate
+build *args:
+    @just _compose build --no-cache {{ args }}
 
-backend:
-    podman compose exec backend bash
+ps:
+    @just _compose ps
 
-worker:
+shell-backend:
+    @just _compose exec backend bash
+
+makemigrations *args:
+    @just _compose exec backend uv run python manage.py makemigrations {{ args }}
+
+migrate *args:
+    @just _compose exec backend uv run python manage.py migrate {{ args }}
+
+showmigrations:
+    @just _compose exec backend uv run python manage.py showmigrations
+
+lint-backend:
+    @just _compose exec backend uv run ruff check .
+
+format-backend:
+    @just _compose exec backend uv run ruff format .
+
+fix-backend:
+    @just _compose exec backend uv run ruff check --fix .
+    @just _compose exec backend uv run ruff format .
+
+shell-worker:
     podman compose exec worker bash

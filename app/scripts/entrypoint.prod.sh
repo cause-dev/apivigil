@@ -11,7 +11,7 @@ command_exists() {
 # Function to run migrations with error handling
 run_migrations() {
     echo "📊 Running database migrations..."
-    if uv run python manage.py migrate --verbosity=1; then
+    if python manage.py migrate --verbosity=1; then
         echo "✅ Migrations completed successfully"
     else
         echo "❌ Migration failed"
@@ -19,43 +19,32 @@ run_migrations() {
     fi
 }
 
-# Function to collect static files
-collect_static() {
-    echo "📦 Collecting static files..."
-    if uv run python manage.py collectstatic --noinput --verbosity=1; then
-        echo "✅ Static files collected successfully"
-    else
-        echo "❌ Static file collection failed"
-        exit 1
-    fi
-}
-
 # Function to validate production settings
 validate_production() {
     echo "🔍 Validating production settings..."
-    
+
     # Check critical production settings
     if [ "$DEBUG" = "True" ]; then
         echo "⚠️  WARNING: DEBUG is True in production!"
     fi
-    
+
     if [ -z "$SECRET_KEY" ] || [ "$SECRET_KEY" = "your-secret-key-here" ]; then
         echo "❌ ERROR: SECRET_KEY is not properly set for production"
         exit 1
     fi
-    
+
     if [ -z "$ALLOWED_HOSTS" ] || [ "$ALLOWED_HOSTS" = "[]" ]; then
         echo "❌ ERROR: ALLOWED_HOSTS is not properly set for production"
         exit 1
     fi
-    
+
     echo "✅ Production settings validated"
 }
 
 # Function to check database connection
 check_database() {
     echo "🔗 Checking database connection..."
-    if uv run python manage.py dbshell --command="SELECT 1;" >/dev/null 2>&1; then
+    if python manage.py dbshell --command="SELECT 1;" >/dev/null 2>&1; then
         echo "✅ Database connection successful"
     else
         echo "❌ Database connection failed"
@@ -89,12 +78,6 @@ trap graceful_shutdown SIGTERM SIGINT
 
 # Main execution
 main() {
-    # Check if uv is installed
-    if ! command_exists uv; then
-        echo "❌ 'uv' command not found. Please install uv first."
-        exit 1
-    fi
-
     # Check if Django project is properly configured
     if [ ! -f "manage.py" ]; then
         echo "❌ manage.py not found. Please run from the project root."
@@ -110,9 +93,6 @@ main() {
     # Run migrations
     run_migrations
 
-    # Collect static files (only for admin)
-    collect_static
-
     # Show production information
     show_production_info
 
@@ -120,9 +100,9 @@ main() {
     echo "🌟 Starting Gunicorn production server..."
     echo "   Server will be available at: ${SITE_URL:-https://yourdomain.com}"
     echo ""
-    
+
     # Use Gunicorn with production settings
-    exec uv run gunicorn config.wsgi:application \
+    exec gunicorn config.wsgi:application \
         --bind 0.0.0.0:8000 \
         --workers ${GUNICORN_WORKERS:-3} \
         --worker-class ${GUNICORN_WORKER_CLASS:-sync} \

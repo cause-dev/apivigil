@@ -35,11 +35,6 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --all-groups --no-install-project
 
-COPY . .
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --all-groups
-
 COPY --chmod=755 ./scripts/entrypoint.dev.sh /usr/local/bin/entrypoint.dev.sh
 
 EXPOSE 8000

@@ -1,13 +1,15 @@
-from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.views import (
     LoginView as DjangoLoginView,
+)
+from django.contrib.auth.views import (
     LogoutView as DjangoLogoutView,
 )
+from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
-from .forms import SignUpForm, LoginForm
-from .mixins import HtmxMixin, HtmxFormMixin, AuthContextMixin
+from .forms import LoginForm, SignUpForm
+from .mixins import AuthContextMixin, HtmxFormMixin, HtmxMixin
 
 # Create your views here.
 

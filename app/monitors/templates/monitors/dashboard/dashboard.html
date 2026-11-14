@@ -1,49 +1,57 @@
 {% extends base_template %}
 
 {% block title %}
-  Dashboard - ApiVigil
-{% endblock %}
+    Dashboard - ApiVigil
+{% endblock title %}
 
 {% block content %}
-  <!-- 1. Breadcrumbs (Static) -->
-  {% include T.LAYOUT.PARTIALS.BREADCRUMBS %}
+    <!-- 1. Breadcrumbs (Static) -->
+    {% include T.LAYOUT.PARTIALS.BREADCRUMBS %}
 
-  <div class="space-y-8">
-    <!-- 2. Header Section (Static - Outside the poll) -->
-    <!-- This ensures the "New Monitor" button doesn't reload during pings -->
-    {% include 'monitors/dashboard/partials/header.html' %}
+    <div class="space-y-8">
+        <!-- 2. Header Section (Static - Outside the poll) -->
+        <!-- This ensures the "New Monitor" button doesn't reload during pings -->
+        {% include 'monitors/dashboard/partials/header.html' %}
 
-    <!-- 3. Dynamic Content Area (Stats & Table) -->
-    <div id="poll-container" class="space-y-8" hx-get="{% url 'dashboard_poll' %}" hx-trigger="every 60s" hx-target="this" hx-swap="innerHTML">
-      <!-- Stats Row -->
-      {% include 'monitors/dashboard/partials/stats.html' %}
+        <!-- 3. Dynamic Content Area (Stats & Table) -->
+        <div
+            id="poll-container"
+            class="space-y-8"
+            hx-get="{% url 'dashboard_poll' %}"
+            hx-trigger="every 60s"
+            hx-target="this"
+            hx-swap="innerHTML"
+        >
+            <!-- Stats Row -->
+            {% include 'monitors/dashboard/partials/stats.html' %}
 
-      <!-- Table Section -->
-      <div class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="p-6 pb-0">
-          <h2 class="text-xl font-bold">Endpoints Overview</h2>
+            <!-- Table Section -->
+            <div class="card bg-base-100 border border-base-300 shadow-sm">
+                <div class="p-6 pb-0">
+                    <h2 class="text-xl font-bold">Endpoints Overview</h2>
+                </div>
+                <div class="overflow-x-auto p-4">
+                    <table class="table w-full">
+                        <thead>
+                            <tr class="text-base-content/50">
+                                <th>Name & URL</th>
+                                <th>Expected</th>
+                                <th>Current Status</th>
+                                <th>Last Checked</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <!-- Ensure this ID matches your OOB swap target from previous steps -->
+                        <tbody id="endpoint-table-body">
+                            {% include 'monitors/endpoint/partials/list.html' %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="overflow-x-auto p-4">
-          <table class="table w-full">
-            <thead>
-              <tr class="text-base-content/50">
-                <th>Name & URL</th>
-                <th>Expected</th>
-                <th>Current Status</th>
-                <th>Last Checked</th>
-                <th class="text-right">Actions</th>
-              </tr>
-            </thead>
-            <!-- Ensure this ID matches your OOB swap target from previous steps -->
-            <tbody id="endpoint-table-body">
-              {% include 'monitors/endpoint/partials/list.html' %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div> <!-- End poll-container -->
-  </div>
+        <!-- End poll-container -->
+    </div>
 
-  <!-- THE MODAL STRUCTURE (Static - Outside the poll) -->
-  {% include 'monitors/endpoint/partials/modal.html' %}
-{% endblock %}
+    <!-- THE MODAL STRUCTURE (Static - Outside the poll) -->
+    {% include 'monitors/endpoint/partials/modal.html' %}
+{% endblock content %}

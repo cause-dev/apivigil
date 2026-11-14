@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.15"
 dependencies = [
-    "celery>=5.6.3",
+    "celery[redis]>=5.6.3",
     "django>=6.0.3",
     "django-celery-beat>=2.9.0",
     "django-environ>=0.13.0",
@@ -17,8 +17,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.40.2",
-    "djlint>=1.50.0",
+    "django-stubs-ext>=6.1.2",
+    "django-types>=0.24.0",
+    "djangofmt>=1.1.0",
+    "ruff>=0.17.5",
+    "ty>=0.0.104",
 ]
 prod = [
     "gunicorn>=26.0.0",
@@ -27,5 +30,8 @@ prod = [
 [tool.djls]
 django_settings_module = "config.settings"
 
-[tool.djlint]
+[tool.djangofmt]
+line-length = 120
+indent-width = 4
 profile = "django"
+html-void-self-closing = "never"

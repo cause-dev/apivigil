@@ -1,5 +1,6 @@
 import requests
 from django.utils import timezone
+
 from .models import EndpointLog
 
 
@@ -27,13 +28,13 @@ class MonitorService:
             if response.status_code in [404, 405]:
                 response = self._perform_request("GET")
 
+        except requests.RequestException as e:
+            self.is_online = False
+            self.error_message = str(e)[:1000]
+        else:
             self.status_code = response.status_code
             self.response_time = response.elapsed.total_seconds()
             self.is_online = self.status_code == self.expected_code
-
-        except Exception as e:
-            self.is_online = False
-            self.error_message = str(e)[:1000]
 
         self._create_log_entry()
 
@@ -56,6 +57,7 @@ class MonitorService:
         """Updates the Django model instance with the check results."""
         self.endpoint.is_online = self.is_online
         self.endpoint.last_checked = timezone.now()
+        print(self.endpoint.last_checked)
         self.endpoint.save()
         return self.endpoint
 

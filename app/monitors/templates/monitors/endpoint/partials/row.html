@@ -1,13 +1,19 @@
 <tr id="endpoint-row-{{ item.id }}" class="hover:bg-base-200/50 transition-colors">
-  <td>
-    <div class="flex flex-col">
-      <!-- Link the name to the detail view -->
-      <a href="{% url 'endpoint' item.id %}" hx-boost="true" hx-target="#main-content" hx-push-url="true" class="font-bold text-base hover:text-primary transition-colors cursor-pointer">{{ item.name }}</a>
-      <span class="text-xs opacity-50 font-mono">{{ item.url|truncatechars:40 }}</span>
-    </div>
-  </td>
+    <td>
+        <div class="flex flex-col">
+            <!-- Link the name to the detail view -->
+            <a
+                href="{% url 'endpoint' item.id %}"
+                hx-boost="true"
+                hx-target="#main-content"
+                hx-push-url="true"
+                class="font-bold text-base hover:text-primary transition-colors cursor-pointer"
+            >{{ item.name }}</a>
+            <span class="text-xs opacity-50 font-mono">{{ item.url|truncatechars:40 }}</span>
+        </div>
+    </td>
 
-  {% include 'monitors/endpoint/partials/status.html' %}
+    {% include 'monitors/endpoint/partials/status.html' %}
 
-  {% include 'monitors/endpoint/partials/actions.html' %}
+    {% include 'monitors/endpoint/partials/actions.html' %}
 </tr>

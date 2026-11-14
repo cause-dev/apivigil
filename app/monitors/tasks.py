@@ -1,6 +1,11 @@
+from logging import getLogger
+
 from celery import shared_task
+
 from .models import Endpoint
 from .services import MonitorService
+
+logger = getLogger(__name__)
 
 
 @shared_task
@@ -8,6 +13,8 @@ def check_api_task(api_id):
     """
     Background task to ping a specific monitor.
     """
+    logger.info(f"Pinging API with id {api_id}")
+    print("--------------------------------------")
     try:
         endpoint = Endpoint.objects.get(id=api_id)
         service = MonitorService(endpoint)

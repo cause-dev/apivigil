@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.list import ListView
 from django.views.generic import TemplateView
+from django.views.generic.list import ListView
 
-from config.template_registry import T
-from monitors.utils import get_endpoint_stats
 from monitors.models import Endpoint
+from monitors.utils import get_endpoint_stats
 
 
 class DashboardView(LoginRequiredMixin, ListView):

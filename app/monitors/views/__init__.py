@@ -1,10 +1,22 @@
-from .dashboard import DashboardView, DashboardPollView
+from .dashboard import DashboardPollView, DashboardView
 from .endpoints import (
     AddEndpointView,
+    DeleteEndpointView,
+    EndpointCheckView,
     EndpointView,
     MonitorRowView,
-    EndpointCheckView,
-    DeleteEndpointView,
     UpdateEndpointView,
 )
 from .logs import LogsView
+
+__all__ = (
+    "AddEndpointView",
+    "DashboardPollView",
+    "DashboardView",
+    "DeleteEndpointView",
+    "EndpointCheckView",
+    "EndpointView",
+    "LogsView",
+    "MonitorRowView",
+    "UpdateEndpointView",
+)

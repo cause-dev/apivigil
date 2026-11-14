@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Endpoint, EndpointLog
 
 # Register your models here.

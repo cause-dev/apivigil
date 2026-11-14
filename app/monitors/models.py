@@ -1,12 +1,19 @@
+from typing import TYPE_CHECKING
+
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Avg
-from django.contrib.auth.models import User
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models.manager import RelatedManager
 
 # Create your models here.
 
 
 class Endpoint(models.Model):
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="endpoints")
+    user = models.ForeignKey(
+        to=User, on_delete=models.CASCADE, related_name="endpoints"
+    )
     name = models.CharField(max_length=100)
     url = models.URLField()
     expected_status_code = models.PositiveIntegerField(default=200)
@@ -18,6 +25,9 @@ class Endpoint(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.url})"
+
+    if TYPE_CHECKING:
+        logs: RelatedManager[EndpointLog]
 
     @property
     def uptime_percentage(self):
@@ -44,10 +54,8 @@ class EndpointLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-timestamp"]
-        indexes = [
-            models.Index(fields=["timestamp"]),
-        ]
+        ordering = ("-timestamp",)
+        indexes = (models.Index(fields=("timestamp",)),)
 
     def __str__(self):
-        return f"{self.monitor.name} - {self.status_code} at {self.timestamp}"
+        return f"{self.endpoint.name} - {self.status_code} at {self.timestamp}"

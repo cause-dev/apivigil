@@ -1,8 +1,7 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render
 from django.views.generic.list import ListView
 
-from config.template_registry import T
 from monitors.models import Endpoint, EndpointLog
 
 
@@ -30,7 +29,7 @@ class LogsView(LoginRequiredMixin, ListView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        if self.request.htmx:
+        if getattr(self.request, "htmx", False):
             target = self.request.headers.get("HX-Target")
             if target == "log-table-body":
                 return render(

@@ -13,7 +13,7 @@
 		"Python": {
 			"tab_size": 4,
 			"hard_tabs": false,
-			"language_servers": ["basedpyright", "ruff"],
+			"language_servers": ["ty", "ruff"],
 			"format_on_save": "on",
 			"formatter": {
 				"language_server": {
@@ -27,37 +27,33 @@
 		},
 		"Django": {
 			"tab_size": 4,
+			"format_on_save": "on",
 			"formatter": {
 				"external": {
-					"command": "/app/.venv/bin/djlint",
-					"arguments": [
-						"-",
-						"--reformat",
-						"--profile=django",
-						"--stdin-filename",
-						"{buffer_path}"
-					]
+					"command": "djangofmt",
+					"arguments": ["--stdin-filename", "{buffer_path}"]
 				}
-			},
-			"format_on_save": "on"
+			}
 		},
 		"TOML": {
-			"tab_size": 2
+			"tab_size": 2,
+			"language_servers": ["!biome"]
+		},
+		"JSON": {
+			"language_servers": ["!biome"]
 		}
 	},
 	"lsp": {
-		"basedpyright": {
+		"ty": {
 			"binary": {
-				"path": "/app/.venv/bin/basedpyright-langserver",
-				"arguments": ["--stdio"]
-			},
-			"settings": {
-				"basedpyright": {
-					"analysis": {
-						"autoImportCompletions": true,
-						"diagnosticMode": "workspace"
-					}
-				}
+				"path": "/app/.venv/bin/ty",
+				"arguments": ["server"]
+			}
+		},
+		"ruff": {
+			"binary": {
+				"path": "/app/.venv/bin/ruff",
+				"arguments": ["server"]
 			}
 		}
 	}

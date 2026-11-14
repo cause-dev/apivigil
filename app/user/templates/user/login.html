@@ -1,25 +1,33 @@
 {% extends base_template|default:'base.html' %}
 
 {% block title %}
-  Login - ApiVigil
-{% endblock %}
+    Login - ApiVigil
+{% endblock title %}
 
 {% block content %}
-  {% include T.LAYOUT.PARTIALS.BREADCRUMBS with page_breadcrumb='Login' %}
-  <div class="flex justify-center items-center py-10">
-    <div class="card bg-base-100 w-full max-w-md shadow-2xl border border-base-300">
-      <div class="card-body">
-        <h2 class="card-title text-2xl font-bold mb-4 flex gap-2"><span class="text-primary">🔐</span> Login to ApiVigil</h2>
+    {% include T.LAYOUT.PARTIALS.BREADCRUMBS with page_breadcrumb='Login' %}
+    <div class="flex justify-center items-center py-10">
+        <div class="card bg-base-100 w-full max-w-md shadow-2xl border border-base-300">
+            <div class="card-body">
+                <h2 class="card-title text-2xl font-bold mb-4 flex gap-2">
+                    <span class="text-primary">🔐</span> Login to ApiVigil
+                </h2>
 
-        {% include 'user/partials/form.html' %}
+                {% include 'user/partials/form.html' %}
 
-        <div class="divider">OR</div>
+                <div class="divider">OR</div>
 
-        <div class="text-center">
-          <p class="text-sm opacity-70">Don't have an account?</p>
-          <a href="/user/register/" hx-get="{% url 'register' %}" hx-target="#main-content" hx-push-url="true" class="link link-primary font-bold">Create an account</a>
+                <div class="text-center">
+                    <p class="text-sm opacity-70">Don't have an account?</p>
+                    <a
+                        href="/user/register/"
+                        hx-get="{% url 'register' %}"
+                        hx-target="#main-content"
+                        hx-push-url="true"
+                        class="link link-primary font-bold"
+                    >Create an account</a>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-{% endblock %}
+{% endblock content %}

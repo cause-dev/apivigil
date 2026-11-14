@@ -1,22 +1,23 @@
 from datetime import timedelta
+from logging import getLogger
 
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import View
 from django.views.generic.detail import DetailView, SingleObjectMixin
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_htmx.http import trigger_client_event
 
 from config.template_registry import T
-
-from monitors.utils import get_endpoint_stats
-from monitors.tasks import check_api_task
-from monitors.models import Endpoint
 from monitors.forms import EndpointForm
+from monitors.models import Endpoint
+from monitors.tasks import check_api_task
+from monitors.utils import get_endpoint_stats
+
+logger = getLogger(__name__)
 
 
 # --- 1. DETAIL VIEW ---
@@ -26,7 +27,7 @@ class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def test_func(self):
         """Security: Ensure only the owner can view this endpoint."""
-        return self.get_object().user == self.request.user
+        return self.get_object().user == self.request.user  # ty: ignore[missing-attribute]
 
     def get_queryset(self):
         """Optimization: Only look for endpoints belonging to the user."""
@@ -34,7 +35,7 @@ class EndpointView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        obj = self.object
+        obj = self.object  # ty: ignore[missing-attribute]
 
         # 1. Get logs from the last 24 hours for the chart
         last_24h = timezone.now() - timedelta(hours=24)
@@ -72,7 +73,7 @@ class AddEndpointView(LoginRequiredMixin, CreateView):
         self.object = form.save()
 
         # 3. HTMX Response
-        if self.request.htmx:
+        if getattr(self.request, "htmx", False):
             messages.success(
                 self.request, f"Endpoint '{self.object.name}' added successfully."
             )
@@ -95,7 +96,7 @@ class AddEndpointView(LoginRequiredMixin, CreateView):
 
     def form_invalid(self, form):
         """Handles HTMX form validation errors (e.g. invalid URL)."""
-        if self.request.htmx:
+        if getattr(self.request, "htmx", False):
             return render(self.request, self.template_name, {"form": form})
         return super().form_invalid(form)
 
@@ -108,7 +109,7 @@ class UpdateEndpointView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         """Security: Ensure only the owner can edit this endpoint."""
-        return self.get_object().user == self.request.user
+        return self.get_object().user == self.request.user  # ty: ignore[missing-attribute]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -120,7 +121,7 @@ class UpdateEndpointView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         self.object = form.save()
 
         # 2. HTMX Response
-        if self.request.htmx:
+        if getattr(self.request, "htmx", False):
             messages.success(
                 self.request, f"Endpoint '{self.object.name}' updated successfully."
             )
@@ -141,7 +142,7 @@ class UpdateEndpointView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_invalid(self, form):
         """Handles HTMX form validation errors (e.g. invalid URL)."""
-        if self.request.htmx:
+        if getattr(self.request, "htmx", False):
             return render(self.request, self.template_name, {"form": form})
         return super().form_invalid(form)
 
@@ -152,7 +153,7 @@ class DeleteEndpointView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         """Security: Ensure only the owner can delete this endpoint."""
-        return self.get_object().user == self.request.user
+        return self.get_object().user == self.request.user  # ty: ignore[missing-attribute]
 
     def delete(self, request, *args, **kwargs):
         # 1. Perform the deletion
@@ -161,7 +162,7 @@ class DeleteEndpointView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
         # 2. HTMX Response
         if request.htmx:
-            messages.error(self.request, f"Endpoint '{self.object.name}' deleted.")
+            messages.error(self.request, f"Endpoint '{self.object.name}' deleted.")  # ty: ignore[missing-attribute]
 
             endpoints = Endpoint.objects.filter(user=self.request.user).order_by(
                 "-created_at"
@@ -183,7 +184,7 @@ class EndpointCheckView(
     model = Endpoint
 
     def test_func(self):
-        return self.get_object().user == self.request.user
+        return self.get_object().user == self.request.user  # ty: ignore[missing-attribute]
 
     def get(self, request, *args, **kwargs):
         endpoint = self.get_object()
@@ -193,15 +194,17 @@ class EndpointCheckView(
         return render(request, "monitors/endpoint/partials/htmx_row.html", context)
 
     def post(self, request, *args, **kwargs):
+        logger.info(f"Checking API with id {self.get_object().id}")  # ty: ignore[missing-attribute]
+        print("---------------------Post------------------")
         endpoint = self.get_object()
 
-        check_api_task.delay(endpoint.id)
+        check_api_task.delay(endpoint.id)  # ty: ignore[missing-attribute]
 
         context = get_endpoint_stats(request.user)
         context["endpoint"] = endpoint
 
         last_24h = timezone.now() - timedelta(hours=24)
-        chart_logs = endpoint.logs.filter(timestamp__gte=last_24h).order_by("timestamp")
+        chart_logs = endpoint.logs.filter(timestamp__gte=last_24h).order_by("timestamp")  # ty: ignore[missing-attribute]
 
         if request.htmx:
             target = self.request.headers.get("HX-Target")
@@ -229,11 +232,11 @@ class EndpointCheckView(
 
 class MonitorRowView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Endpoint
-    template_name = T["MONITORS"]["PARTIALS"]["ENDPOINTS"]["ROW"]
+    template_name = T.MONITORS.PARTIALS.ENDPOINTS.ROW
     context_object_name = "endpoint"
 
     def test_func(self):
-        return self.get_object().user == self.request.user
+        return self.get_object().user == self.request.user  # ty: ignore[missing-attribute]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
